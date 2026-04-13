@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Gran Espectáculo Eléctrico</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="locked">
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <span class="logo-text">G.E.E. Admin</span>
+            <h2>Acceso Restringido</h2>
+            <p>Introduce la clave de acceso para continuar</p>
+            <input type="password" id="admin-pass" placeholder="Contraseña">
+            <button id="login-btn" class="btn-primary">Entrar</button>
+            <p id="login-error" class="error-text" style="display: none;">Contraseña incorrecta</p>
+        </div>
+    </div>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="logo-area">
+                <span class="logo-text">G.E.E. Admin</span>
+                <div class="status-indicator" id="db-status">
+                    <span class="status-dot"></span>
+                    <span class="status-label">Conectado</span>
+                </div>
+            </div>
+            <nav class="side-nav">
+                <a href="#stats" class="nav-item active">Estadísticas</a>
+                <a href="#responses" class="nav-item">Respuestas</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="export-csv" class="btn-export">Exportar CSV</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <div>
+                    <h1>Dashboard de Encuestas</h1>
+                    <div class="date-filters">
+                        <div class="filter-group">
+                            <label>Desde:</label>
+                            <input type="date" id="date-from">
+                        </div>
+                        <div class="filter-group">
+                            <label>Hasta:</label>
+                            <input type="date" id="date-to">
+                        </div>
+                        <button id="clear-filters" class="btn-text">Reset</button>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="refresh-data" class="btn-icon">↻ Actualizar</button>
+                </div>
+            </header>
+
+            <section id="stats" class="dashboard-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Total Respuestas</span>
+                        <span id="total-responses" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Satisfacción Media</span>
+                        <span id="avg-satisfaction" class="stat-value">0.0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Tasa de Recomendación</span>
+                        <span id="recommend-rate" class="stat-value">0%</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Uso de Audioguías</span>
+                        <span id="audioguide-rate" class="stat-value">0%</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Han asistido a otras charlas</span>
+                        <span id="recurring-rate" class="stat-value">0%</span>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Satisfacción Estética (Steampunk)</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="satisfactionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Máquinas Sorprendentes</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="machinesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Nivel de Interactividad</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="interactivityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Eficacia Educativa</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="educationChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Comparativa de Promedios (1-5)</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="averagesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="responses" class="dashboard-section">
+                <div class="table-container">
+                    <table id="responses-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Email</th>
+                                <th>Q1 (Estética)</th>
+                                <th>Q2 (Máquina)</th>
+                                <th>Q3 (Claro)</th>
+                                <th>Detalles</th>
+                            </tr>
+                        </thead>
+                        <tbody id="responses-body">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="details-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Detalles de la Respuesta</h2>
+            <div id="modal-details-content"></div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
