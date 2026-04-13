@@ -18,10 +18,11 @@
         <div class="login-card">
             <span class="logo-text">G.E.E. Admin</span>
             <h2>Acceso Restringido</h2>
-            <p>Introduce la clave de acceso para continuar</p>
+            <p>Introduce tus credenciales para continuar</p>
+            <input type="email" id="admin-email" placeholder="Correo electrónico" style="margin-bottom: 15px;">
             <input type="password" id="admin-pass" placeholder="Contraseña">
             <button id="login-btn" class="btn-primary">Entrar</button>
-            <p id="login-error" class="error-text" style="display: none;">Contraseña incorrecta</p>
+            <p id="login-error" class="error-text" style="display: none;">Credenciales incorrectas</p>
         </div>
     </div>
     <div class="admin-layout">
@@ -38,7 +39,8 @@
                 <a href="#responses" class="nav-item">Respuestas</a>
             </nav>
             <div class="sidebar-footer">
-                <button id="export-csv" class="btn-export">Exportar CSV</button>
+                <button id="export-csv" class="btn-export" style="margin-bottom: 10px;">Exportar CSV</button>
+                <button id="logout-btn" class="btn-export" style="background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);">Cerrar Sesión</button>
             </div>
         </aside>
 

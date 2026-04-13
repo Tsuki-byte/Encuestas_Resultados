@@ -1,7 +1,6 @@
 // --- CONFIGURATION ---
 const SUPABASE_URL = 'https://bjbhbdcueiyjtifvcxcg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqYmhiZGN1ZWl5anRpZnZjeGNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTA4NDAsImV4cCI6MjA5MTE2Njg0MH0.iCi7FWXBzOfkwqjK_0G8ChkNIyY2ixH-h5d-NvcM-DY';
-const ADMIN_PASSWORD = 'GEE_ADMIN_2024'; // TODO: Change this as needed
 
 const questions = [
     { id: 'q1', type: 'rating', text: '¿Qué te ha parecido la estética "steampunk" de la exposición?' },
@@ -46,24 +45,62 @@ const clearFiltersBtn = document.getElementById('clear-filters');
 // Auth Elements
 const loginOverlay = document.getElementById('login-overlay');
 const loginBtn = document.getElementById('login-btn');
+const emailInput = document.getElementById('admin-email');
 const passInput = document.getElementById('admin-pass');
 const loginError = document.getElementById('login-error');
+const logoutBtn = document.getElementById('logout-btn');
 
 // --- AUTH LOGIC ---
 
-function checkAuth() {
-    if (localStorage.getItem('gee_admin_auth') === 'true') {
+// --- AUTH LOGIC ---
+
+async function checkAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
         unlock();
     }
 }
 
-function login() {
-    if (passInput.value === ADMIN_PASSWORD) {
-        localStorage.setItem('gee_admin_auth', 'true');
-        unlock();
-    } else {
+async function login() {
+    const email = emailInput.value;
+    const password = passInput.value;
+    
+    if (!email || !password) return;
+
+    loginBtn.innerText = 'Cargando...';
+    loginBtn.disabled = true;
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password,
+    });
+
+    loginBtn.innerText = 'Entrar';
+    loginBtn.disabled = false;
+
+    if (error) {
+        loginError.innerText = error.message.includes('Invalid login') ? 'Credenciales incorrectas' : 'Error: ' + error.message;
         loginError.style.display = 'block';
         passInput.style.borderColor = '#ff4d4d';
+        emailInput.style.borderColor = '#ff4d4d';
+    } else {
+        loginError.style.display = 'none';
+        passInput.style.borderColor = '';
+        emailInput.style.borderColor = '';
+        unlock();
+    }
+}
+
+async function logout() {
+    const { error } = await supabaseClient.auth.signOut();
+    if (!error) {
+        allResponses = [];
+        allAnswers = [];
+        filteredResponses = [];
+        responsesBody.innerHTML = '';
+        loginOverlay.style.display = 'flex';
+        document.body.classList.add('locked');
+        passInput.value = '';
     }
 }
 
@@ -359,6 +396,8 @@ function exportToCSV() {
 
 loginBtn.addEventListener('click', login);
 passInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
+emailInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
+if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
 dateFromInput.addEventListener('change', applyFilters);
 dateToInput.addEventListener('change', applyFilters);
