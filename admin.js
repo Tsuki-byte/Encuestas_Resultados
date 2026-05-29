@@ -47,6 +47,7 @@ const expoForm = document.getElementById('expo-form');
 // Filters
 const dateFromInput = document.getElementById('date-from');
 const dateToInput = document.getElementById('date-to');
+const expoFilterInput = document.getElementById('expo-filter');
 const clearFiltersBtn = document.getElementById('clear-filters');
 
 // Auth Elements
@@ -149,6 +150,14 @@ async function fetchData() {
         if (eError) throw eError;
         allExpos = expos;
 
+        // Populate Expo Filter
+        if (expoFilterInput) {
+            const currentVal = expoFilterInput.value;
+            expoFilterInput.innerHTML = '<option value="">Todas</option>' + 
+                allExpos.map(e => `<option value="${e.id}">${e.lugar}</option>`).join('');
+            expoFilterInput.value = currentVal;
+        }
+
         applyFilters();
     } catch (err) {
         console.error('Error loading data:', err);
@@ -165,10 +174,13 @@ function applyFilters() {
     // Set 'to' to end of day
     if (to) to.setHours(23, 59, 59, 999);
 
+    const expoId = expoFilterInput ? expoFilterInput.value : '';
+
     filteredResponses = allResponses.filter(resp => {
         const date = new Date(resp.created_at);
         if (from && date < from) return false;
         if (to && date > to) return false;
+        if (expoId && resp.exposicion_id !== expoId) return false;
         return true;
     });
 
@@ -178,6 +190,7 @@ function applyFilters() {
 function resetFilters() {
     dateFromInput.value = '';
     dateToInput.value = '';
+    if (expoFilterInput) expoFilterInput.value = '';
     applyFilters();
 }
 
@@ -459,13 +472,17 @@ function exportToCSV() {
     if (filteredResponses.length === 0) return;
 
     // Header
-    let csv = 'Fecha,Email,' + questions.map(q => `"${q.text}"`).join(',') + '\n';
+    let csv = 'Fecha,Email,Exposición,' + questions.map(q => `"${q.text}"`).join(',') + '\n';
 
     // Rows
     filteredResponses.forEach(resp => {
+        const expo = allExpos.find(e => e.id === resp.exposicion_id);
+        const expoName = expo ? expo.lugar : 'Sin asignar';
+        
         let row = [
             new Date(resp.created_at).toLocaleString(),
-            resp.email
+            resp.email,
+            `"${expoName}"`
         ];
         
         questions.forEach(q => {
@@ -498,6 +515,7 @@ if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
 dateFromInput.addEventListener('change', applyFilters);
 dateToInput.addEventListener('change', applyFilters);
+if (expoFilterInput) expoFilterInput.addEventListener('change', applyFilters);
 clearFiltersBtn.addEventListener('click', resetFilters);
 
 document.querySelectorAll('.nav-item').forEach(item => {
