@@ -638,7 +638,7 @@ if (btnGenerateAi) {
             }
         } catch (err) {
             console.error('Error generando resumen IA:', err);
-            aiContent.innerHTML = `<p style="color: #ff4d4d;">❌ Error al conectar con la IA: ${err.message}</p><p style="color: #888; font-size: 0.9rem; margin-top: 10px;">Asegúrate de haber desplegado la función en Supabase y de haber configurado tu OPENAI_API_KEY en los Secrets.</p>`;
+            aiContent.innerHTML = `<p style="color: #ff4d4d;">❌ Error al conectar con la IA: ${err.message}</p><p style="color: #888; font-size: 0.9rem; margin-top: 10px;">Asegúrate de haber desplegado la función en Supabase y de haber configurado tu GEMINI_API_KEY en los Secrets.</p>`;
         } finally {
             btnGenerateAi.disabled = false;
             btnGenerateAi.innerHTML = '🤖 Generar Resumen';
