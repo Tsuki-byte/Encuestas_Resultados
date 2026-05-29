@@ -49,22 +49,29 @@
             <header class="content-header">
                 <div>
                     <h1>Dashboard de Encuestas</h1>
-                    <div class="date-filters">
+                    <div class="date-filters" style="gap: 2rem; margin-top: 15px;">
                         <div class="filter-group">
-                            <label>Desde:</label>
-                            <input type="date" id="date-from">
+                            <label style="font-size: 1.1rem; font-weight: 500;">Desde:</label>
+                            <input type="date" id="date-from" style="font-size: 1.1rem; padding: 8px;">
                         </div>
                         <div class="filter-group">
-                            <label>Hasta:</label>
-                            <input type="date" id="date-to">
+                            <label style="font-size: 1.1rem; font-weight: 500;">Hasta:</label>
+                            <input type="date" id="date-to" style="font-size: 1.1rem; padding: 8px;">
                         </div>
                         <div class="filter-group">
-                            <label style="font-size: 1.1rem; font-weight: 500;">Exposición:</label>
-                            <select id="expo-filter" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #444; background: #2a2a2a; color: #fff; font-size: 1.1rem; font-weight: 600; cursor: pointer; min-width: 200px;">
+                            <label style="font-size: 1.2rem; font-weight: 600;">Exposición:</label>
+                            <select id="expo-filter" style="padding: 10px 15px; border-radius: 6px; border: 2px solid #444; background: #2a2a2a; color: #fff; font-size: 1.2rem; font-weight: 600; cursor: pointer; min-width: 250px;">
                                 <option value="">Todas</option>
                             </select>
                         </div>
-                        <button id="clear-filters" class="btn-secondary">Limpiar</button>
+                        <button id="clear-filters" class="btn-secondary" style="padding: 10px 20px; font-size: 1.1rem; border-radius: 6px;">Limpiar</button>
+                    </div>
+
+                    <!-- Panel de Detalles de Exposición (Oculto por defecto) -->
+                    <div id="expo-info-panel" style="display: none; margin-top: 20px; background: rgba(212, 167, 92, 0.05); padding: 15px 20px; border-radius: 8px; border-left: 4px solid var(--accent);">
+                        <h3 id="expo-info-title" style="color: var(--accent); margin-bottom: 8px; font-size: 1.3rem;">-</h3>
+                        <p id="expo-info-dates" style="font-size: 1rem; color: var(--text-muted); margin-bottom: 5px;">-</p>
+                        <p id="expo-info-stats" style="font-size: 1rem; color: var(--text-main);">Visitas totales: <strong>-</strong></p>
                     </div>
                 </div>
                 <div class="header-actions">
@@ -248,6 +255,6 @@
         </div>
     </div>
 
-    <script src="admin.js?v=4"></script>
+    <script src="admin.js?v=5"></script>
 </body>
 </html>

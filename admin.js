@@ -176,6 +176,22 @@ function applyFilters() {
 
     const expoId = expoFilterInput ? expoFilterInput.value : '';
 
+    // Actualizar Panel de Info de la Exposición
+    const infoPanel = document.getElementById('expo-info-panel');
+    if (infoPanel) {
+        if (expoId) {
+            const expo = allExpos.find(e => e.id === expoId);
+            if (expo) {
+                document.getElementById('expo-info-title').innerText = expo.lugar;
+                document.getElementById('expo-info-dates').innerText = `📅 Desde ${new Date(expo.fecha_inicio).toLocaleDateString()} hasta ${new Date(expo.fecha_fin).toLocaleDateString()}`;
+                document.getElementById('expo-info-stats').innerHTML = `👥 Visitas totales registradas: <strong>${expo.visitas_totales || 0}</strong>`;
+                infoPanel.style.display = 'block';
+            }
+        } else {
+            infoPanel.style.display = 'none';
+        }
+    }
+
     filteredResponses = allResponses.filter(resp => {
         const date = new Date(resp.created_at);
         if (from && date < from) return false;
