@@ -176,8 +176,10 @@ function applyFilters() {
 
     const expoId = expoFilterInput ? expoFilterInput.value : '';
 
-    // Actualizar Panel de Info de la Exposición
+    // Actualizar Panel de Info de la Exposición y Panel de IA
     const infoPanel = document.getElementById('expo-info-panel');
+    const aiPanel = document.getElementById('ai-summary-panel');
+    
     if (infoPanel) {
         if (expoId) {
             const expo = allExpos.find(e => e.id === expoId);
@@ -186,13 +188,22 @@ function applyFilters() {
                 document.getElementById('expo-info-dates').innerText = `📅 Desde ${new Date(expo.fecha_inicio).toLocaleDateString()} hasta ${new Date(expo.fecha_fin).toLocaleDateString()}`;
                 document.getElementById('expo-info-stats').innerHTML = `👥 Visitas totales registradas: <strong>${expo.visitas_totales || 0}</strong>`;
                 infoPanel.style.display = 'block';
+                if (aiPanel) aiPanel.style.display = 'block';
+                
+                // Resetear el contenido del resumen de IA
+                const aiContent = document.getElementById('ai-summary-content');
+                if (aiContent) {
+                    aiContent.innerHTML = '<p style="color: #888; font-style: italic;">Haz clic en el botón para que la Inteligencia Artificial analice las respuestas de esta exposición y genere un resumen automático.</p>';
+                }
             }
         } else {
             infoPanel.style.display = 'none';
+            if (aiPanel) aiPanel.style.display = 'none';
         }
     }
 
     filteredResponses = allResponses.filter(resp => {
+
         const date = new Date(resp.created_at);
         if (from && date < from) return false;
         if (to && date > to) return false;
@@ -599,6 +610,41 @@ if(expoForm) {
 
 refreshBtn.addEventListener('click', fetchData);
 exportBtn.addEventListener('click', exportToCSV);
+
+// AI Summary Logic
+const btnGenerateAi = document.getElementById('btn-generate-ai');
+if (btnGenerateAi) {
+    btnGenerateAi.addEventListener('click', async () => {
+        const expoId = expoFilterInput ? expoFilterInput.value : '';
+        if (!expoId) return alert('Por favor, selecciona una exposición del desplegable primero.');
+
+        const aiContent = document.getElementById('ai-summary-content');
+        btnGenerateAi.disabled = true;
+        btnGenerateAi.innerHTML = '⏳ Generando resumen (puede tardar un minuto)...';
+        aiContent.innerHTML = `<p style="color: #cda8ff; font-style: italic;">Analizando ${filteredResponses.length} respuestas con Inteligencia Artificial...</p>`;
+
+        try {
+            // Llamar a la Edge Function de Supabase
+            const { data, error } = await supabaseClient.functions.invoke('generate-summary', {
+                body: { exposicion_id: expoId }
+            });
+
+            if (error) throw error;
+
+            if (data && data.summary) {
+                aiContent.innerHTML = `<p>${data.summary.replace(/\\n/g, '<br>')}</p>`;
+            } else {
+                throw new Error('La IA no devolvió un resumen válido.');
+            }
+        } catch (err) {
+            console.error('Error generando resumen IA:', err);
+            aiContent.innerHTML = `<p style="color: #ff4d4d;">❌ Error al conectar con la IA: ${err.message}</p><p style="color: #888; font-size: 0.9rem; margin-top: 10px;">Asegúrate de haber desplegado la función en Supabase y de haber configurado tu OPENAI_API_KEY en los Secrets.</p>`;
+        } finally {
+            btnGenerateAi.disabled = false;
+            btnGenerateAi.innerHTML = '🤖 Generar Resumen';
+        }
+    });
+}
 
 // Initial Load
 checkAuth();

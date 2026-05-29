@@ -73,6 +73,19 @@
                         <p id="expo-info-dates" style="font-size: 1rem; color: var(--text-muted); margin-bottom: 5px;">-</p>
                         <p id="expo-info-stats" style="font-size: 1rem; color: var(--text-main);">Visitas totales: <strong>-</strong></p>
                     </div>
+
+                    <!-- Panel de Resumen de Inteligencia Artificial (Oculto por defecto) -->
+                    <div id="ai-summary-panel" style="display: none; margin-top: 20px; background: rgba(147, 112, 219, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(147, 112, 219, 0.5); position: relative;">
+                        <h3 style="color: #cda8ff; margin-bottom: 10px; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+                            ✨ Resumen Inteligente (IA)
+                        </h3>
+                        <div id="ai-summary-content" style="color: #e0e0e0; font-size: 1.05rem; line-height: 1.6; white-space: pre-line; min-height: 80px;">
+                            <p style="color: #888; font-style: italic;">Haz clic en el botón para que la Inteligencia Artificial analice las respuestas de esta exposición y genere un resumen automático.</p>
+                        </div>
+                        <button id="btn-generate-ai" class="btn-primary" style="background: #9370db; color: white; margin-top: 15px; width: auto; font-size: 1rem; padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 6px; cursor: pointer;">
+                            🤖 Generar Resumen
+                        </button>
+                    </div>
                 </div>
                 <div class="header-actions">
                     <button id="refresh-data" class="btn-icon">↻ Actualizar</button>
