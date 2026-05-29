@@ -340,10 +340,14 @@ function renderTable() {
         const q2 = rAnswers.find(a => a.question_id === 'q2')?.value || '-';
         const q3 = rAnswers.find(a => a.question_id === 'q3')?.value || '-';
         
+        const expo = allExpos.find(e => e.id === resp.exposicion_id);
+        const expoName = expo ? expo.lugar : 'Sin asignar';
+        
         return `
             <tr>
                 <td>${date}</td>
                 <td>${resp.email}</td>
+                <td><small style="color: #a0a0a0;">${expoName}</small></td>
                 <td>${q1}</td>
                 <td>${q2}</td>
                 <td>${q3}</td>
@@ -361,6 +365,10 @@ function renderExpos() {
             <td>${new Date(expo.fecha_inicio).toLocaleDateString()} al ${new Date(expo.fecha_fin).toLocaleDateString()}</td>
             <td>${expo.visitas_totales || '-'}</td>
             <td>
+                ${expo.activa ? 
+                    '<span style="color: #4dff88; font-weight: bold; margin-right: 10px;">★ ACTIVA</span>' : 
+                    `<button class="btn-details" style="margin-right: 10px;" onclick="setActivaExpo('${expo.id}')">Activar</button>`
+                }
                 <button class="btn-details" onclick="editExpo('${expo.id}')">Editar</button>
                 <button class="btn-details" style="background: rgba(255, 77, 77, 0.2); color: #ff4d4d;" onclick="deleteExpo('${expo.id}')">Borrar</button>
             </td>
@@ -406,6 +414,26 @@ window.editExpo = (id) => {
     document.getElementById('expo-galeria').value = expo.galeria_url || '';
     
     expoModal.style.display = 'block';
+};
+
+window.setActivaExpo = async (id) => {
+    // Confirmación opcional
+    if(!confirm('¿Marcar esta exposición como la activa? Las nuevas encuestas se vincularán a ella.')) return;
+    
+    // Primero, desactivamos todas
+    const activas = allExpos.filter(e => e.activa);
+    for (let expo of activas) {
+        await supabaseClient.from('exposiciones').update({ activa: false }).eq('id', expo.id);
+    }
+    
+    // Luego, activamos la seleccionada
+    const { error } = await supabaseClient.from('exposiciones').update({ activa: true }).eq('id', id);
+    
+    if (error) {
+        alert('Error al activar exposición: ' + error.message);
+    } else {
+        fetchData();
+    }
 };
 
 window.deleteExpo = async (id) => {

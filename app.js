@@ -281,13 +281,29 @@ async function submitSurvey() {
         // 0. Pre-generar el ID de la respuesta para no tener que pedírselo a la base de datos
         const responseId = window.crypto.randomUUID();
 
+        // 0.5 Buscar la exposición activa
+        let activeExpoId = null;
+        try {
+            const { data: expoData } = await supabaseClient
+                .from('exposiciones')
+                .select('id')
+                .eq('activa', true)
+                .single();
+            if (expoData) {
+                activeExpoId = expoData.id;
+            }
+        } catch (e) {
+            console.warn('No se pudo obtener la exposición activa o no hay ninguna.', e);
+        }
+
         // 1. Create response record (sin select al final porque RLS nos lo bloquea)
         const { error: responseError } = await supabaseClient
             .from('responses')
             .insert({ 
                 id: responseId,
                 email: userEmail,
-                marketing_consent: marketingConsent
+                marketing_consent: marketingConsent,
+                exposicion_id: activeExpoId
             });
 
         if (responseError) {
