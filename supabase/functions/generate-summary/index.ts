@@ -13,16 +13,26 @@ serve(async (req) => {
     const { exposicion_id } = await req.json()
     if (!exposicion_id) throw new Error('Falta el ID de la exposición')
 
-    // Conectar a Supabase usando el token del administrador actual (Seguridad extra)
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error('Falta la cabecera Authorization en la petición')
+    const token = authHeader.replace('Bearer ', '')
+
+    // Conectar a Supabase usando el token del administrador actual
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
+
+    if (!supabaseUrl || !supabaseAnonKey) throw new Error('Faltan las variables SUPABASE_URL o SUPABASE_ANON_KEY')
+
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      supabaseUrl,
+      supabaseAnonKey,
+      { global: { headers: { Authorization: authHeader } } }
     )
 
-    // Validar que el que pide el resumen sea un administrador logueado
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-    if (userError || !user) throw new Error('No autorizado')
+    // Validar que el que pide el resumen sea un administrador logueado pasándole el token manualmente
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
+    if (userError) throw new Error('Error al validar sesión: ' + userError.message)
+    if (!user) throw new Error('Token inválido o expirado. No autorizado.')
 
     // Conseguir los IDs de todas las respuestas de esta exposición
     const { data: responses, error: rError } = await supabaseClient
@@ -55,15 +65,27 @@ serve(async (req) => {
     const topMachine = Object.keys(machineCounts).sort((a, b) => machineCounts[b] - machineCounts[a])[0] || 'Ninguna'
 
     // Crear el Prompt para Gemini
-    const prompt = `Eres un experto analizando encuestas de exposiciones de ciencia y tecnología.
-    Analiza los siguientes resultados reales:
-    - Total de respuestas analizadas: ${responses.length}
+    const prompt = `Eres un experto analista de datos de encuestas de satisfacción en exposiciones de ciencia y tecnología.
+    Se ha realizado una encuesta a los visitantes y estos son los resultados recopilados:
+    
+    - Total de visitantes encuestados: ${responses.length}
     - Puntuación media en Estética: ${avgEstetica} sobre 5
     - Tasa de Recomendación: ${recommendRate}%
-    - La máquina/invento más popular: ${topMachine}
-    - Ejemplos de comentarios abiertos: ${openComments.slice(0, 15).join(' | ')}
+    - Máquina/invento más votado como favorito: ${topMachine}
     
-    Por favor, escribe un resumen ejecutivo y claro de unas 10 líneas. Destaca el sentir general del público, la máquina más exitosa y cualquier área de mejora detectada en los comentarios. No incluyas saludos ni frases introductorias, ve directo al resumen.`
+    A continuación se listan TODOS los comentarios y opiniones abiertas dejados por los visitantes en el buzón de sugerencias:
+    ${openComments.map(c => `- "${c}"`).join('\n    ')}
+    
+    Tu tarea es escribir un informe analítico muy completo y detallado para los organizadores de la exposición. 
+    Tu análisis debe tener la longitud que consideres necesaria y estar estructurado con títulos claros:
+    
+    1. **🌟 Recepción General**: Un resumen del éxito y sentimiento general de la exposición.
+    2. **🏆 Lo más elogiado**: Las cosas que más han gustado o sorprendido a la gente.
+    3. **🗣️ Opiniones Curiosas**: Destaca alguna opinión particular, original o textual que te llame la atención.
+    4. **⚠️ Puntos Negativos y Mejoras**: Analiza las críticas más repetidas, lo que menos ha gustado o las sugerencias de mejora que han dejado. No te dejes nada negativo en el tintero, es vital para mejorar.
+    5. **🎯 Conclusión**: Un cierre breve con el veredicto final.
+    
+    Usa formato Markdown (negritas, listas) para que el reporte sea fácil de leer y muy profesional. No escatimes en palabras, haz un análisis profundo.`
 
     // Llamar a la API de Gemini (Google)
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY')
@@ -75,7 +97,11 @@ serve(async (req) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 2000,
+          temperature: 0.7
+        }
       })
     })
 
@@ -90,6 +116,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ summary }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
   } catch (error) {
+    console.error('Error interno de la Edge Function:', error.message, error.stack)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

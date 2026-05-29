@@ -632,7 +632,8 @@ if (btnGenerateAi) {
             if (error) throw error;
 
             if (data && data.summary) {
-                aiContent.innerHTML = `<p>${data.summary.replace(/\\n/g, '<br>')}</p>`;
+                // marked.parse renders the Markdown to HTML
+                aiContent.innerHTML = marked.parse(data.summary);
             } else {
                 throw new Error('La IA no devolvió un resumen válido.');
             }
