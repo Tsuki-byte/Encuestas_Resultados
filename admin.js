@@ -409,7 +409,15 @@ window.editExpo = (id) => {
 };
 
 window.deleteExpo = async (id) => {
-    if(!confirm('¿Estás seguro de que quieres borrar esta exposición?')) return;
+    const expo = allExpos.find(e => e.id === id);
+    if(!expo) return;
+    
+    const confirmacion = prompt(`CUIDADO: Vas a borrar la exposición "${expo.lugar}".\n\nPara confirmar, escribe la palabra BORRAR en mayúsculas:`);
+    
+    if (confirmacion !== 'BORRAR') {
+        alert('Borrado cancelado.');
+        return;
+    }
     
     const { error } = await supabaseClient.from('exposiciones').delete().eq('id', id);
     if (error) {
