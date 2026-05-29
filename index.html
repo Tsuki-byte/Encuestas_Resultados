@@ -37,6 +37,7 @@
             <nav class="side-nav">
                 <a href="#stats" class="nav-item active">Estadísticas</a>
                 <a href="#responses" class="nav-item">Respuestas</a>
+                <a href="#exposiciones" class="nav-item">Exposiciones</a>
             </nav>
             <div class="sidebar-footer">
                 <button id="export-csv" class="btn-export" style="margin-bottom: 10px;">Exportar CSV</button>
@@ -145,6 +146,28 @@
                     </table>
                 </div>
             </section>
+
+            <section id="exposiciones" class="dashboard-section">
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Histórico de Exposiciones</h2>
+                    <button id="btn-new-expo" class="btn-primary" style="padding: 10px 20px;">+ Nueva Exposición</button>
+                </div>
+                <div class="table-container">
+                    <table id="expos-table">
+                        <thead>
+                            <tr>
+                                <th>Lugar</th>
+                                <th>Fechas</th>
+                                <th>Visitas</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expos-body">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -154,6 +177,67 @@
             <span class="close-modal">&times;</span>
             <h2>Detalles de la Respuesta</h2>
             <div id="modal-details-content"></div>
+        </div>
+    </div>
+
+    <!-- Expo Form Modal -->
+    <div id="expo-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close-modal" id="close-expo-modal">&times;</span>
+            <h2 id="expo-modal-title">Nueva Exposición</h2>
+            <form id="expo-form" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                <input type="hidden" id="expo-id">
+                
+                <div style="display: flex; flex-direction: column;">
+                    <label>Lugar *</label>
+                    <input type="text" id="expo-lugar" required style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff;">
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <div style="display: flex; flex-direction: column; flex: 1;">
+                        <label>Fecha Inicio *</label>
+                        <input type="date" id="expo-inicio" required style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; flex: 1;">
+                        <label>Fecha Fin *</label>
+                        <input type="date" id="expo-fin" required style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div style="display: flex; flex-direction: column; flex: 1;">
+                        <label>Visitas Totales</label>
+                        <input type="number" id="expo-visitas" style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; flex: 1;">
+                        <label>Público Mayoritario</label>
+                        <input type="text" id="expo-publico" placeholder="Ej. Familias" style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff;">
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column;">
+                    <label>Descripción</label>
+                    <textarea id="expo-desc" rows="2" style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff; font-family: inherit;"></textarea>
+                </div>
+
+                <div style="display: flex; flex-direction: column;">
+                    <label>Observaciones (Internas)</label>
+                    <textarea id="expo-obs" rows="2" style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff; font-family: inherit;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div style="display: flex; flex-direction: column; flex: 1;">
+                        <label>Foto Portada (URL)</label>
+                        <input type="url" id="expo-foto" placeholder="https://..." style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; flex: 1;">
+                        <label>Galería Drive (URL)</label>
+                        <input type="url" id="expo-galeria" placeholder="https://drive.google.com/..." style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 10px; padding: 12px;">Guardar Exposición</button>
+            </form>
         </div>
     </div>
 

@@ -21,6 +21,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 // State
 let allResponses = [];
 let allAnswers = [];
+let allExpos = [];
 let filteredResponses = [];
 let charts = {};
 
@@ -36,6 +37,12 @@ const refreshBtn = document.getElementById('refresh-data');
 const modal = document.getElementById('details-modal');
 const modalContent = document.getElementById('modal-details-content');
 const closeModal = document.querySelector('.close-modal');
+
+const exposBody = document.getElementById('expos-body');
+const expoModal = document.getElementById('expo-modal');
+const closeExpoModalBtn = document.getElementById('close-expo-modal');
+const btnNewExpo = document.getElementById('btn-new-expo');
+const expoForm = document.getElementById('expo-form');
 
 // Filters
 const dateFromInput = document.getElementById('date-from');
@@ -133,6 +140,15 @@ async function fetchData() {
         if (aError) throw aError;
         allAnswers = answers;
 
+        // Fetch Exposiciones
+        const { data: expos, error: eError } = await supabaseClient
+            .from('exposiciones')
+            .select('*')
+            .order('fecha_inicio', { ascending: false });
+
+        if (eError) throw eError;
+        allExpos = expos;
+
         applyFilters();
     } catch (err) {
         console.error('Error loading data:', err);
@@ -171,6 +187,7 @@ function processAndRender() {
     updateKPIs();
     renderCharts();
     renderTable();
+    renderExpos();
 }
 
 function updateKPIs() {
@@ -336,6 +353,21 @@ function renderTable() {
     }).join('');
 }
 
+function renderExpos() {
+    if (!exposBody) return;
+    exposBody.innerHTML = allExpos.map(expo => `
+        <tr>
+            <td><strong>${expo.lugar}</strong></td>
+            <td>${new Date(expo.fecha_inicio).toLocaleDateString()} al ${new Date(expo.fecha_fin).toLocaleDateString()}</td>
+            <td>${expo.visitas_totales || '-'}</td>
+            <td>
+                <button class="btn-details" onclick="editExpo('${expo.id}')">Editar</button>
+                <button class="btn-details" style="background: rgba(255, 77, 77, 0.2); color: #ff4d4d;" onclick="deleteExpo('${expo.id}')">Borrar</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
 // --- ACTIONS ---
 
 window.showDetails = (responseId) => {
@@ -356,6 +388,35 @@ window.showDetails = (responseId) => {
 
     modalContent.innerHTML = html;
     modal.style.display = 'block';
+};
+
+window.editExpo = (id) => {
+    const expo = allExpos.find(e => e.id === id);
+    if(!expo) return;
+    document.getElementById('expo-modal-title').innerText = 'Editar Exposición';
+    document.getElementById('expo-id').value = expo.id;
+    document.getElementById('expo-lugar').value = expo.lugar;
+    document.getElementById('expo-inicio').value = expo.fecha_inicio;
+    document.getElementById('expo-fin').value = expo.fecha_fin;
+    document.getElementById('expo-visitas').value = expo.visitas_totales || '';
+    document.getElementById('expo-publico').value = expo.publico_mayoritario || '';
+    document.getElementById('expo-desc').value = expo.descripcion || '';
+    document.getElementById('expo-obs').value = expo.observaciones || '';
+    document.getElementById('expo-foto').value = expo.foto_url || '';
+    document.getElementById('expo-galeria').value = expo.galeria_url || '';
+    
+    expoModal.style.display = 'block';
+};
+
+window.deleteExpo = async (id) => {
+    if(!confirm('¿Estás seguro de que quieres borrar esta exposición?')) return;
+    
+    const { error } = await supabaseClient.from('exposiciones').delete().eq('id', id);
+    if (error) {
+        alert('Error al borrar: ' + error.message);
+    } else {
+        fetchData();
+    }
 };
 
 function exportToCSV() {
@@ -416,7 +477,55 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 closeModal.onclick = () => modal.style.display = 'none';
-window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; };
+if(closeExpoModalBtn) closeExpoModalBtn.onclick = () => expoModal.style.display = 'none';
+
+window.onclick = (e) => { 
+    if (e.target == modal) modal.style.display = 'none'; 
+    if (e.target == expoModal) expoModal.style.display = 'none';
+};
+
+if(btnNewExpo) {
+    btnNewExpo.addEventListener('click', () => {
+        document.getElementById('expo-modal-title').innerText = 'Nueva Exposición';
+        expoForm.reset();
+        document.getElementById('expo-id').value = '';
+        expoModal.style.display = 'block';
+    });
+}
+
+if(expoForm) {
+    expoForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('expo-id').value;
+        const expoData = {
+            lugar: document.getElementById('expo-lugar').value,
+            fecha_inicio: document.getElementById('expo-inicio').value,
+            fecha_fin: document.getElementById('expo-fin').value,
+            visitas_totales: parseInt(document.getElementById('expo-visitas').value) || null,
+            publico_mayoritario: document.getElementById('expo-publico').value,
+            descripcion: document.getElementById('expo-desc').value,
+            observaciones: document.getElementById('expo-obs').value,
+            foto_url: document.getElementById('expo-foto').value,
+            galeria_url: document.getElementById('expo-galeria').value
+        };
+
+        let error;
+        if (id) {
+            const res = await supabaseClient.from('exposiciones').update(expoData).eq('id', id);
+            error = res.error;
+        } else {
+            const res = await supabaseClient.from('exposiciones').insert([expoData]);
+            error = res.error;
+        }
+
+        if (error) {
+            alert('Error al guardar: ' + error.message);
+        } else {
+            expoModal.style.display = 'none';
+            fetchData();
+        }
+    });
+}
 
 refreshBtn.addEventListener('click', fetchData);
 exportBtn.addEventListener('click', exportToCSV);
