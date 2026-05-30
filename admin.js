@@ -209,10 +209,14 @@ function applyFilters() {
                 infoPanel.style.display = 'block';
                 if (aiPanel) aiPanel.style.display = 'block';
 
-                // Resetear el contenido del resumen de IA
+                // Mostrar el contenido del resumen de IA guardado o el texto por defecto
                 const aiContent = document.getElementById('ai-summary-content');
                 if (aiContent) {
-                    aiContent.innerHTML = '<p style="color: #888; font-style: italic;">Haz clic en el botón para que la Inteligencia Artificial analice las respuestas de esta exposición y genere un resumen automático.</p>';
+                    if (expo.resumen_ia) {
+                        aiContent.innerHTML = marked.parse(expo.resumen_ia);
+                    } else {
+                        aiContent.innerHTML = '<p style="color: #888; font-style: italic;">Haz clic en el botón para que la Inteligencia Artificial analice las respuestas de esta exposición y genere un resumen automático.</p>';
+                    }
                 }
             }
         } else {
@@ -811,6 +815,13 @@ if (btnGenerateAi) {
             if (error) throw error;
 
             if (data && data.summary) {
+                // Guardar el resumen en la base de datos
+                await supabaseClient.from('exposiciones').update({ resumen_ia: data.summary }).eq('id', expoId);
+                
+                // Actualizar la memoria local para no tener que recargar la página
+                const expoToUpdate = allExpos.find(e => e.id === expoId);
+                if (expoToUpdate) expoToUpdate.resumen_ia = data.summary;
+
                 // marked.parse renders the Markdown to HTML
                 aiContent.innerHTML = marked.parse(data.summary);
             } else {
