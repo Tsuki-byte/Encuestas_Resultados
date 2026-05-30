@@ -72,7 +72,7 @@ async function checkAuth() {
 async function login() {
     const email = emailInput.value;
     const password = passInput.value;
-    
+
     if (!email || !password) return;
 
     loginBtn.innerText = 'Cargando...';
@@ -123,7 +123,7 @@ function unlock() {
 async function fetchData() {
     try {
         console.log('Fetching data from Supabase...');
-        
+
         // Fetch responses
         const { data: responses, error: rError } = await supabaseClient
             .from('responses')
@@ -153,7 +153,7 @@ async function fetchData() {
         // Populate Expo Filter
         if (expoFilterInput) {
             const currentVal = expoFilterInput.value;
-            expoFilterInput.innerHTML = '<option value="">Todas</option>' + 
+            expoFilterInput.innerHTML = '<option value="">Todas</option>' +
                 allExpos.map(e => `<option value="${e.id}">${e.lugar}</option>`).join('');
             expoFilterInput.value = currentVal;
         }
@@ -170,7 +170,7 @@ async function fetchData() {
 function applyFilters() {
     const from = dateFromInput.value ? new Date(dateFromInput.value) : null;
     const to = dateToInput.value ? new Date(dateToInput.value) : null;
-    
+
     // Set 'to' to end of day
     if (to) to.setHours(23, 59, 59, 999);
 
@@ -179,23 +179,23 @@ function applyFilters() {
     // Actualizar Panel de Info de la Exposición y Panel de IA
     const infoPanel = document.getElementById('expo-info-panel');
     const aiPanel = document.getElementById('ai-summary-panel');
-    
+
     if (infoPanel) {
         if (expoId) {
             const expo = allExpos.find(e => e.id === expoId);
             if (expo) {
                 document.getElementById('expo-info-title').innerText = expo.lugar;
                 document.getElementById('expo-info-dates').innerText = `📅 Desde ${new Date(expo.fecha_inicio).toLocaleDateString()} hasta ${new Date(expo.fecha_fin).toLocaleDateString()}`;
-                
+
                 let statsHtml = `👥 Visitas totales registradas: <strong>${expo.visitas_totales || 0}</strong>`;
                 if (expo.ganador_sorteo) {
                     statsHtml += `<br>🎁 Ganador del Sorteo: <strong style="color: var(--accent);">${expo.ganador_sorteo}</strong>`;
                 }
                 document.getElementById('expo-info-stats').innerHTML = statsHtml;
-                
+
                 infoPanel.style.display = 'block';
                 if (aiPanel) aiPanel.style.display = 'block';
-                
+
                 // Resetear el contenido del resumen de IA
                 const aiContent = document.getElementById('ai-summary-content');
                 if (aiContent) {
@@ -238,7 +238,7 @@ function processAndRender() {
 
 function updateKPIs() {
     totalResponsesEl.innerText = filteredResponses.length;
-    
+
     // Get answers for filtered responses
     const filteredRespIds = new Set(filteredResponses.map(r => r.id));
     const filteredAnswers = allAnswers.filter(a => filteredRespIds.has(a.response_id));
@@ -246,7 +246,7 @@ function updateKPIs() {
 
     // 1. Average satisfaction (q1)
     const q1Answers = filteredAnswers.filter(a => a.question_id === 'q1').map(a => parseInt(a.value));
-    const avg = q1Answers.length > 0 
+    const avg = q1Answers.length > 0
         ? (q1Answers.reduce((a, b) => a + b, 0) / q1Answers.length).toFixed(1)
         : '0.0';
     avgSatisfactionEl.innerText = avg;
@@ -272,21 +272,21 @@ function renderCharts() {
     const currentAnswers = allAnswers.filter(a => filteredRespIds.has(a.response_id));
 
     // 1. Satisfaction Chart (q1)
-    renderDistributionChart('satisfactionChart', 'q1', [1,2,3,4,5], '#d4a75c', 'bar', currentAnswers);
-    
+    renderDistributionChart('satisfactionChart', 'q1', [1, 2, 3, 4, 5], '#d4a75c', 'bar', currentAnswers);
+
     // 2. Machines Chart (q2)
     const machines = [
-        'Bola de Plasma', 'Máquina de Wimshurt', 'Generador de Marx', 
-        'Transferencia Inalámbrica', 'Bobina de Tesla', 'Coche Eléctrico', 
+        'Bola de Plasma', 'Máquina de Wimshurt', 'Generador de Marx',
+        'Transferencia Inalámbrica', 'Bobina de Tesla', 'Coche Eléctrico',
         'Levitador de Haslett', 'Levitador de Ayrton', 'Motor Solar Mendocino', 'Lifter'
     ];
     renderDistributionChart('machinesChart', 'q2', machines, '#4d94ff', 'bar', currentAnswers);
 
     // 3. Interactivity (q4)
-    renderDistributionChart('interactivityChart', 'q4', [1,2,3,4,5], '#ff4d4d', 'bar', currentAnswers);
+    renderDistributionChart('interactivityChart', 'q4', [1, 2, 3, 4, 5], '#ff4d4d', 'bar', currentAnswers);
 
     // 4. Educational (q6)
-    renderDistributionChart('educationChart', 'q6', [1,2,3,4,5], '#4dff88', 'bar', currentAnswers);
+    renderDistributionChart('educationChart', 'q6', [1, 2, 3, 4, 5], '#4dff88', 'bar', currentAnswers);
 
     // 5. Averages Comparison Chart
     renderAveragesComparisonChart(currentAnswers);
@@ -385,10 +385,10 @@ function renderTable() {
         const q1 = rAnswers.find(a => a.question_id === 'q1')?.value || '-';
         const q2 = rAnswers.find(a => a.question_id === 'q2')?.value || '-';
         const q3 = rAnswers.find(a => a.question_id === 'q3')?.value || '-';
-        
+
         const expo = allExpos.find(e => e.id === resp.exposicion_id);
         const expoName = expo ? expo.lugar : 'Sin asignar';
-        
+
         return `
             <tr>
                 <td>${date}</td>
@@ -411,10 +411,10 @@ function renderExpos() {
             <td>${new Date(expo.fecha_inicio).toLocaleDateString()} al ${new Date(expo.fecha_fin).toLocaleDateString()}</td>
             <td>${expo.visitas_totales || '-'}</td>
             <td>
-                ${expo.activa ? 
-                    '<span style="color: #4dff88; font-weight: bold; margin-right: 10px;">★ ACTIVA</span>' : 
-                    `<button class="btn-details" style="margin-right: 10px;" onclick="setActivaExpo('${expo.id}')">Activar</button>`
-                }
+                ${expo.activa ?
+            '<span style="color: #4dff88; font-weight: bold; margin-right: 10px;">★ ACTIVA</span>' :
+            `<button class="btn-details" style="margin-right: 10px;" onclick="setActivaExpo('${expo.id}')">Activar</button>`
+        }
                 <button class="btn-details" onclick="editExpo('${expo.id}')">Editar</button>
                 <button class="btn-details" style="background: rgba(255, 77, 77, 0.2); color: #ff4d4d;" onclick="deleteExpo('${expo.id}')">Borrar</button>
             </td>
@@ -427,9 +427,9 @@ function renderExpos() {
 window.showDetails = (responseId) => {
     const resp = allResponses.find(r => r.id === responseId);
     const rAnswers = allAnswers.filter(a => a.response_id === responseId);
-    
+
     let html = `<div style="margin-bottom: 20px;"><strong>Email:</strong> ${resp.email}<br><strong>Fecha:</strong> ${new Date(resp.created_at).toLocaleString()}</div>`;
-    
+
     questions.forEach(q => {
         const ans = rAnswers.find(a => a.question_id === q.id);
         html += `
@@ -446,7 +446,7 @@ window.showDetails = (responseId) => {
 
 window.editExpo = (id) => {
     const expo = allExpos.find(e => e.id === id);
-    if(!expo) return;
+    if (!expo) return;
     document.getElementById('expo-modal-title').innerText = 'Editar Exposición';
     document.getElementById('expo-id').value = expo.id;
     document.getElementById('expo-lugar').value = expo.lugar;
@@ -458,23 +458,23 @@ window.editExpo = (id) => {
     document.getElementById('expo-obs').value = expo.observaciones || '';
     document.getElementById('expo-foto').value = expo.foto_url || '';
     document.getElementById('expo-galeria').value = expo.galeria_url || '';
-    
+
     expoModal.style.display = 'block';
 };
 
 window.setActivaExpo = async (id) => {
     // Confirmación opcional
-    if(!confirm('¿Marcar esta exposición como la activa? Las nuevas encuestas se vincularán a ella.')) return;
-    
+    if (!confirm('¿Marcar esta exposición como la activa? Las nuevas encuestas se vincularán a ella.')) return;
+
     // Primero, desactivamos todas
     const activas = allExpos.filter(e => e.activa);
     for (let expo of activas) {
         await supabaseClient.from('exposiciones').update({ activa: false }).eq('id', expo.id);
     }
-    
+
     // Luego, activamos la seleccionada
     const { error } = await supabaseClient.from('exposiciones').update({ activa: true }).eq('id', id);
-    
+
     if (error) {
         alert('Error al activar exposición: ' + error.message);
     } else {
@@ -484,15 +484,15 @@ window.setActivaExpo = async (id) => {
 
 window.deleteExpo = async (id) => {
     const expo = allExpos.find(e => e.id === id);
-    if(!expo) return;
-    
+    if (!expo) return;
+
     const confirmacion = prompt(`CUIDADO: Vas a borrar la exposición "${expo.lugar}".\n\nPara confirmar, escribe la palabra BORRAR en mayúsculas:`);
-    
+
     if (confirmacion !== 'BORRAR') {
         alert('Borrado cancelado.');
         return;
     }
-    
+
     const { error } = await supabaseClient.from('exposiciones').delete().eq('id', id);
     if (error) {
         alert('Error al borrar: ' + error.message);
@@ -511,20 +511,20 @@ function exportToCSV() {
     filteredResponses.forEach(resp => {
         const expo = allExpos.find(e => e.id === resp.exposicion_id);
         const expoName = expo ? expo.lugar : 'Sin asignar';
-        
+
         let row = [
             new Date(resp.created_at).toLocaleString(),
             resp.email,
             `"${expoName}"`
         ];
-        
+
         questions.forEach(q => {
             const ans = allAnswers.find(a => a.response_id === resp.id && a.question_id === q.id);
             let val = ans ? ans.value : '';
             val = val.replace(/"/g, '""');
             row.push(`"${val}"`);
         });
-        
+
         csv += row.join(',') + '\n';
     });
 
@@ -556,7 +556,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
         e.preventDefault();
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
-        
+
         item.classList.add('active');
         const target = item.getAttribute('href').substring(1);
         document.getElementById(target).classList.add('active');
@@ -564,14 +564,14 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 closeModal.onclick = () => modal.style.display = 'none';
-if(closeExpoModalBtn) closeExpoModalBtn.onclick = () => expoModal.style.display = 'none';
+if (closeExpoModalBtn) closeExpoModalBtn.onclick = () => expoModal.style.display = 'none';
 
-window.onclick = (e) => { 
-    if (e.target == modal) modal.style.display = 'none'; 
+window.onclick = (e) => {
+    if (e.target == modal) modal.style.display = 'none';
     if (e.target == expoModal) expoModal.style.display = 'none';
 };
 
-if(btnNewExpo) {
+if (btnNewExpo) {
     btnNewExpo.addEventListener('click', () => {
         document.getElementById('expo-modal-title').innerText = 'Nueva Exposición';
         expoForm.reset();
@@ -580,7 +580,7 @@ if(btnNewExpo) {
     });
 }
 
-if(expoForm) {
+if (expoForm) {
     expoForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('expo-id').value;
@@ -663,15 +663,23 @@ const rafflePoolSize = document.getElementById('raffle-pool-size');
 if (btnRaffle) {
     btnRaffle.addEventListener('click', () => {
         // Find responses with a valid email and marketing consent in the current filter
-        const eligibleResponses = filteredResponses.filter(r => 
-            r.email && 
-            r.email.trim() !== '' && 
+        const eligibleResponses = filteredResponses.filter(r =>
+            r.email &&
+            r.email.trim() !== '' &&
             r.marketing_consent === true
         );
-        
+
         if (eligibleResponses.length === 0) {
             alert('No hay correos electrónicos válidos registrados para esta exposición.');
             return;
+        }
+
+        const expoId = expoFilterInput ? expoFilterInput.value : '';
+        const currentExpo = allExpos.find(e => e.id === expoId);
+
+        if (currentExpo && currentExpo.ganador_sorteo) {
+            const confirmOverwrite = confirm(`⚠️ ¡ATENCIÓN!\n\nYa se realizó un sorteo para esta exposición y el ganador fue: ${currentExpo.ganador_sorteo}\n\n¿Estás seguro de que quieres realizar un NUEVO sorteo y sobrescribir al ganador anterior?`);
+            if (!confirmOverwrite) return;
         }
 
         // Show modal and start "calculating" animation
@@ -686,14 +694,14 @@ if (btnRaffle) {
             ticks++;
             const randomEmail = eligibleResponses[Math.floor(Math.random() * eligibleResponses.length)].email;
             raffleWinner.innerHTML = randomEmail;
-            
+
             if (ticks > 15) {
                 clearInterval(interval);
                 // Pick final winner
                 const finalWinner = eligibleResponses[Math.floor(Math.random() * eligibleResponses.length)].email;
                 raffleWinner.innerHTML = `🏆 ${finalWinner} 🏆`;
                 raffleWinner.style.color = 'var(--accent)';
-                
+
                 // Save winner to Supabase (assuming the column was added)
                 const expoId = expoFilterInput ? expoFilterInput.value : '';
                 if (expoId) {
