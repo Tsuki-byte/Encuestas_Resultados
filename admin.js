@@ -656,8 +656,12 @@ const rafflePoolSize = document.getElementById('raffle-pool-size');
 
 if (btnRaffle) {
     btnRaffle.addEventListener('click', () => {
-        // Find responses with a valid email in the current filter
-        const eligibleResponses = filteredResponses.filter(r => r.email && r.email.trim() !== '');
+        // Find responses with a valid email and marketing consent in the current filter
+        const eligibleResponses = filteredResponses.filter(r => 
+            r.email && 
+            r.email.trim() !== '' && 
+            r.marketing_consent === true
+        );
         
         if (eligibleResponses.length === 0) {
             alert('No hay correos electrónicos válidos registrados para esta exposición.');
