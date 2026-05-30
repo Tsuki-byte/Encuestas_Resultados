@@ -48,9 +48,14 @@
         </aside>
 
         <main class="main-content">
-            <header class="content-header">
-                <div>
-                    <h1>Dashboard de Encuestas</h1>
+            <header class="content-header" style="flex-direction: column; align-items: stretch; gap: 0;">
+                <div style="display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h1 style="margin: 0;">Dashboard de Encuestas</h1>
+                        <div class="header-actions">
+                            <button id="refresh-data" class="btn-icon">↻ Actualizar</button>
+                        </div>
+                    </div>
                     <div class="date-filters" style="gap: 2rem; margin-top: 15px;">
                         <div class="filter-group">
                             <label style="font-size: 1.1rem; font-weight: 500;">Desde:</label>
@@ -101,9 +106,6 @@
                             🤖 Generar Resumen
                         </button>
                     </div>
-                </div>
-                <div class="header-actions">
-                    <button id="refresh-data" class="btn-icon">↻ Actualizar</button>
                 </div>
             </header>
 
