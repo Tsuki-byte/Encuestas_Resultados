@@ -188,6 +188,17 @@ function applyFilters() {
                 document.getElementById('expo-info-title').innerText = expo.lugar;
                 document.getElementById('expo-info-dates').innerText = `📅 Desde ${new Date(expo.fecha_inicio).toLocaleDateString()} hasta ${new Date(expo.fecha_fin).toLocaleDateString()}`;
 
+                const expoImage = document.getElementById('expo-info-image');
+                if (expoImage) {
+                    if (expo.foto_url) {
+                        expoImage.src = expo.foto_url;
+                        expoImage.style.display = 'block';
+                    } else {
+                        expoImage.src = '';
+                        expoImage.style.display = 'none';
+                    }
+                }
+
                 let statsHtml = `👥 Visitas totales registradas: <strong>${expo.visitas_totales || 0}</strong>`;
                 if (expo.ganador_sorteo) {
                     statsHtml += `<br>🎁 Ganador del Sorteo: <strong style="color: var(--accent);">${expo.ganador_sorteo}</strong>`;

@@ -72,10 +72,13 @@
                     <!-- Panel de Detalles de Exposición (Oculto por defecto) -->
                     <div id="expo-info-panel" style="display: none; margin-top: 20px; background: rgba(212, 167, 92, 0.05); padding: 15px 20px; border-radius: 8px; border-left: 4px solid var(--accent);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <h3 id="expo-info-title" style="color: var(--accent); margin-bottom: 8px; font-size: 1.3rem;">-</h3>
-                                <p id="expo-info-dates" style="font-size: 1rem; color: var(--text-muted); margin-bottom: 5px;">-</p>
-                                <p id="expo-info-stats" style="font-size: 1rem; color: var(--text-main);">Visitas totales registradas: <strong>-</strong></p>
+                            <div style="display: flex; gap: 20px; align-items: center;">
+                                <img id="expo-info-image" src="" alt="Portada" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid var(--accent); display: none;">
+                                <div>
+                                    <h3 id="expo-info-title" style="color: var(--accent); margin-bottom: 8px; font-size: 1.3rem;">-</h3>
+                                    <p id="expo-info-dates" style="font-size: 1rem; color: var(--text-muted); margin-bottom: 5px;">-</p>
+                                    <p id="expo-info-stats" style="font-size: 1rem; color: var(--text-main);">Visitas totales registradas: <strong>-</strong></p>
+                                </div>
                             </div>
                             <button id="btn-raffle" style="background: #9d00ff; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(157, 0, 255, 0.3); transition: all 0.2s;">
                                 🎁 Sorteo
