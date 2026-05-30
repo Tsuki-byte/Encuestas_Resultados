@@ -189,13 +189,14 @@ function applyFilters() {
                 document.getElementById('expo-info-dates').innerText = `📅 Desde ${new Date(expo.fecha_inicio).toLocaleDateString()} hasta ${new Date(expo.fecha_fin).toLocaleDateString()}`;
 
                 const expoImage = document.getElementById('expo-info-image');
-                if (expoImage) {
+                const expoImageContainer = document.getElementById('expo-image-container');
+                if (expoImage && expoImageContainer) {
                     if (expo.foto_url) {
                         expoImage.src = expo.foto_url;
-                        expoImage.style.display = 'block';
+                        expoImageContainer.style.display = 'block';
                     } else {
                         expoImage.src = '';
-                        expoImage.style.display = 'none';
+                        expoImageContainer.style.display = 'none';
                     }
                 }
 
