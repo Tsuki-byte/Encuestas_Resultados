@@ -647,5 +647,55 @@ if (btnGenerateAi) {
     });
 }
 
+// Raffle Logic
+const btnRaffle = document.getElementById('btn-raffle');
+const raffleModal = document.getElementById('raffle-modal');
+const closeRaffleModal = document.getElementById('close-raffle-modal');
+const raffleWinner = document.getElementById('raffle-winner');
+const rafflePoolSize = document.getElementById('raffle-pool-size');
+
+if (btnRaffle) {
+    btnRaffle.addEventListener('click', () => {
+        // Find responses with a valid email in the current filter
+        const eligibleResponses = filteredResponses.filter(r => r.email && r.email.trim() !== '');
+        
+        if (eligibleResponses.length === 0) {
+            alert('No hay correos electrónicos válidos registrados para esta exposición.');
+            return;
+        }
+
+        // Show modal and start "calculating" animation
+        raffleModal.style.display = 'block';
+        raffleWinner.innerHTML = 'Mezclando correos... 🎲';
+        raffleWinner.style.color = 'var(--text-muted)';
+        rafflePoolSize.innerText = `Participantes válidos: ${eligibleResponses.length}`;
+
+        // Add a fun little delay for suspense
+        let ticks = 0;
+        const interval = setInterval(() => {
+            ticks++;
+            const randomEmail = eligibleResponses[Math.floor(Math.random() * eligibleResponses.length)].email;
+            raffleWinner.innerHTML = randomEmail;
+            
+            if (ticks > 15) {
+                clearInterval(interval);
+                // Pick final winner
+                const finalWinner = eligibleResponses[Math.floor(Math.random() * eligibleResponses.length)].email;
+                raffleWinner.innerHTML = `🏆 ${finalWinner} 🏆`;
+                raffleWinner.style.color = 'var(--accent)';
+                
+                // Trigger confetti if available or just alert
+                // We don't have a confetti library, so we just use emojis
+            }
+        }, 100);
+    });
+}
+
+if (closeRaffleModal) {
+    closeRaffleModal.addEventListener('click', () => {
+        raffleModal.style.display = 'none';
+    });
+}
+
 // Initial Load
 checkAuth();

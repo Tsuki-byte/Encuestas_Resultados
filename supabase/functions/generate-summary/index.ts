@@ -99,7 +99,7 @@ serve(async (req) => {
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          maxOutputTokens: 2000,
+          maxOutputTokens: 8192,
           temperature: 0.7
         }
       })
@@ -111,15 +111,17 @@ serve(async (req) => {
     }
 
     const geminiJson = await geminiResponse.json()
-    const summary = geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text || 'No se pudo generar el resumen con Gemini.'
+    const parts = geminiJson?.candidates?.[0]?.content?.parts || []
+    const summary = parts.map((p: any) => p.text).join('') || 'No se pudo generar el resumen con Gemini.'
 
     return new Response(JSON.stringify({ summary }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
   } catch (error) {
     console.error('Error interno de la Edge Function:', error.message, error.stack)
-    return new Response(JSON.stringify({ error: error.message }), {
+    // Devolvemos status 200 para que el error se muestre en la pantalla del usuario directamente
+    return new Response(JSON.stringify({ summary: `**⚠️ Error interno:** ${error.message}` }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 200,
     })
   }
 })
