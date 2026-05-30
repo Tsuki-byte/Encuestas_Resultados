@@ -715,28 +715,33 @@ function exportToPDF() {
         }
 
         // Get key stats
-        const totalResp = document.getElementById('total-respuestas').innerText;
-        const npsScore = document.getElementById('nps-score').innerText;
-        const avgAge = document.getElementById('avg-age').innerText;
-        const avgRating = document.getElementById('avg-rating').innerText;
+        const totalResp = document.getElementById('total-responses').innerText;
+        const avgSatisfaction = document.getElementById('avg-satisfaction').innerText;
+        const recommendRate = document.getElementById('recommend-rate').innerText;
+        const audioguideRate = document.getElementById('audioguide-rate').innerText;
+        const recurringRate = document.getElementById('recurring-rate').innerText;
 
         const statsHtml = `
             <div style="display: flex; gap: 15px; margin-bottom: 20px;">
                 <div style="flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 12px; color: #64748b;">Respuestas</div>
-                    <div style="font-size: 24px; font-weight: bold; color: #0f172a;">${totalResp}</div>
+                    <div style="font-size: 11px; color: #64748b;">Respuestas</div>
+                    <div style="font-size: 20px; font-weight: bold; color: #0f172a;">${totalResp}</div>
                 </div>
                 <div style="flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 12px; color: #64748b;">NPS Score</div>
-                    <div style="font-size: 24px; font-weight: bold; color: #0f172a;">${npsScore}</div>
+                    <div style="font-size: 11px; color: #64748b;">Satisfacción Media</div>
+                    <div style="font-size: 20px; font-weight: bold; color: #0f172a;">${avgSatisfaction}</div>
                 </div>
                 <div style="flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 12px; color: #64748b;">Edad Media</div>
-                    <div style="font-size: 24px; font-weight: bold; color: #0f172a;">${avgAge}</div>
+                    <div style="font-size: 11px; color: #64748b;">Recomendación</div>
+                    <div style="font-size: 20px; font-weight: bold; color: #0f172a;">${recommendRate}</div>
                 </div>
                 <div style="flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 12px; color: #64748b;">Valoración Media</div>
-                    <div style="font-size: 24px; font-weight: bold; color: #0f172a;">${avgRating}</div>
+                    <div style="font-size: 11px; color: #64748b;">Audioguía</div>
+                    <div style="font-size: 20px; font-weight: bold; color: #0f172a;">${audioguideRate}</div>
+                </div>
+                <div style="flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 11px; color: #64748b;">Repetición</div>
+                    <div style="font-size: 20px; font-weight: bold; color: #0f172a;">${recurringRate}</div>
                 </div>
             </div>
         `;
