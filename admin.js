@@ -676,24 +676,203 @@ if (exportPdfBtn) {
 }
 
 function exportToPDF() {
-    // Save current active state
+    if (filteredResponses.length === 0) {
+        alert('No hay datos para exportar.');
+        return;
+    }
+    
+    // Ensure charts are rendered by making stats active temporarily if not already
     const statsSection = document.getElementById('stats');
-    const responsesSection = document.getElementById('responses');
     const prevStatsActive = statsSection.classList.contains('active');
-    const prevRespActive = responsesSection.classList.contains('active');
-    
-    // Force both sections to be active so Chart.js canvases have physical dimensions
-    statsSection.classList.add('active');
-    responsesSection.classList.add('active');
-    
-    // Allow the browser to reflow and Chart.js to resize
+    if (!prevStatsActive) {
+        statsSection.classList.add('active');
+    }
+
     setTimeout(() => {
-        window.print();
+        const expoId = expoFilterInput ? expoFilterInput.value : '';
+        let expoInfoHtml = '';
         
-        // Restore original state
-        if (!prevStatsActive) statsSection.classList.remove('active');
-        if (!prevRespActive) responsesSection.classList.remove('active');
-    }, 500);
+        if (expoId) {
+            const expo = allExpos.find(e => e.id === expoId);
+            if (expo) {
+                const startDate = new Date(expo.fecha_inicio).toLocaleDateString();
+                const endDate = new Date(expo.fecha_fin).toLocaleDateString();
+                expoInfoHtml = `
+                <div class="summary" style="background: #f8fafc; border-left: 4px solid #4d94ff; padding: 15px; margin-bottom: 20px;">
+                    <h2 style="margin-top:0; color:#1e293b;">${expo.lugar}</h2>
+                    <p style="margin: 5px 0;"><strong>Fechas:</strong> ${startDate} al ${endDate}</p>
+                    <p style="margin: 5px 0;"><strong>Visitas registradas:</strong> ${expo.visitas_totales || 0}</p>
+                    <p style="margin: 5px 0;"><strong>Total encuestas en este reporte:</strong> ${filteredResponses.length}</p>
+                </div>`;
+            }
+        } else {
+            expoInfoHtml = `
+            <div class="summary" style="background: #f8fafc; border-left: 4px solid #4d94ff; padding: 15px; margin-bottom: 20px;">
+                <h2 style="margin-top:0; color:#1e293b;">Reporte Global</h2>
+                <p style="margin: 5px 0;"><strong>Exposición:</strong> Todas las exposiciones</p>
+                <p style="margin: 5px 0;"><strong>Total respuestas exportadas:</strong> ${filteredResponses.length}</p>
+            </div>`;
+        }
+
+        // Get key stats
+        const totalResp = document.getElementById('total-respuestas').innerText;
+        const npsScore = document.getElementById('nps-score').innerText;
+        const avgAge = document.getElementById('avg-age').innerText;
+        const avgRating = document.getElementById('avg-rating').innerText;
+
+        const statsHtml = `
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div style="flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; color: #64748b;">Respuestas</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #0f172a;">${totalResp}</div>
+                </div>
+                <div style="flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; color: #64748b;">NPS Score</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #0f172a;">${npsScore}</div>
+                </div>
+                <div style="flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; color: #64748b;">Edad Media</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #0f172a;">${avgAge}</div>
+                </div>
+                <div style="flex: 1; background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; color: #64748b;">Valoración Media</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #0f172a;">${avgRating}</div>
+                </div>
+            </div>
+        `;
+
+        // Get AI Summary
+        const aiSummaryContent = document.getElementById('ai-summary-content').innerHTML;
+        const aiSummaryHtml = aiSummaryContent ? `
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <h3 style="margin-top:0; color: #166534; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px;">🤖 Resumen Inteligente (IA)</h3>
+                <div style="color: #15803d; font-size: 14px; line-height: 1.6;">${aiSummaryContent}</div>
+            </div>
+        ` : '';
+
+        // Capture Charts (rendering them inside dark divs to preserve their white text visibility)
+        const chartIds = [
+            { id: 'q1-2-chart', title: 'Distribución por Edad y Sexo' },
+            { id: 'q3-chart', title: 'Canal de Conocimiento' },
+            { id: 'q4-chart', title: 'Valoración General' },
+            { id: 'q5-chart', title: 'Probabilidad de Recomendación (NPS)' },
+            { id: 'q7-chart', title: 'Valoración de Elementos' },
+            { id: 'q8-chart', title: 'Distribución de Precios Aceptables' }
+        ];
+
+        let chartsHtml = '<div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px;">';
+        chartIds.forEach(c => {
+            const canvas = document.getElementById(c.id);
+            if (canvas) {
+                const imgData = canvas.toDataURL('image/png');
+                chartsHtml += `
+                <div style="width: 48%; background: #1e1e1e; padding: 15px; border-radius: 8px; box-sizing: border-box;">
+                    <h4 style="color: #a0a0a0; text-align: center; margin-top: 0; margin-bottom: 10px; font-weight: normal; font-size: 13px;">${c.title}</h4>
+                    <img src="${imgData}" style="width: 100%; height: auto;" />
+                </div>`;
+            }
+        });
+        chartsHtml += '</div>';
+
+        let legendHtml = '<div style="margin-bottom: 15px; font-size: 10px; color: #64748b; background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px;"><strong>Leyenda de Preguntas:</strong><br>';
+        questions.forEach((q, i) => {
+            legendHtml += `<strong>Q${i+1}:</strong> ${q.text} &nbsp;&nbsp;&nbsp; `;
+        });
+        legendHtml += '</div>';
+
+        let html = `
+        <html>
+        <head>
+            <title>Informe Ejecutivo de Encuestas</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #334155; line-height: 1.4; font-size: 12px; margin: 0; padding: 40px; background: #fff; }
+                @page { size: portrait; margin: 15mm; }
+                h1 { color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; text-align: center; font-size: 22px; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; page-break-inside: auto; }
+                tr { page-break-inside: avoid; page-break-after: auto; }
+                thead { display: table-header-group; }
+                th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; vertical-align: top; }
+                th { background-color: #f1f5f9; color: #1e293b; font-weight: bold; border-bottom: 2px solid #94a3b8; white-space: nowrap; font-size: 11px; }
+                td { font-size: 10px; }
+                .sugerencia { font-style: italic; color: #475569; }
+                .page-break { page-break-before: always; }
+            </style>
+        </head>
+        <body>
+            <h1>Informe Ejecutivo de Encuestas</h1>
+            ${expoInfoHtml}
+            ${statsHtml}
+            ${chartsHtml}
+            ${aiSummaryHtml}
+            
+            <div class="page-break"></div>
+            <h2 style="color: #0f172a; margin-bottom: 15px;">Tabla de Respuestas Detalladas</h2>
+            ${legendHtml}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Email</th>
+                        ${questions.map((q, i) => `<th>Q${i+1}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        filteredResponses.forEach((resp) => {
+            const dateObj = new Date(resp.created_at);
+            const dateStr = dateObj.toLocaleDateString();
+            const timeStr = dateObj.toLocaleTimeString();
+            const email = resp.email || '-';
+            
+            html += `<tr>
+                <td style="white-space: nowrap;">${dateStr}</td>
+                <td style="white-space: nowrap;">${timeStr}</td>
+                <td>${email}</td>`;
+            
+            const respAnswers = allAnswers.filter(a => a.response_id === resp.id);
+            
+            questions.forEach(q => {
+                const answer = respAnswers.find(a => a.question_id === q.id);
+                const val = answer ? answer.value : '-';
+                
+                if (q.id === 'q10') {
+                    html += `<td class="sugerencia">${val}</td>`;
+                } else {
+                    html += `<td>${val}</td>`;
+                }
+            });
+            
+            html += `</tr>`;
+        });
+
+        html += `
+                </tbody>
+            </table>
+            <script>
+                window.onload = function() { 
+                    setTimeout(function() {
+                        window.print(); 
+                    }, 500);
+                }
+            </script>
+        </body>
+        </html>
+        `;
+
+        if (!prevStatsActive) {
+            statsSection.classList.remove('active');
+        }
+
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(html);
+            printWindow.document.close();
+        } else {
+            alert('Por favor, permite las ventanas emergentes (pop-ups) para generar el PDF.');
+        }
+    }, 100); // Short delay to let charts resize if they were hidden
 }
 
 // AI Summary Logic
