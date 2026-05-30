@@ -186,7 +186,13 @@ function applyFilters() {
             if (expo) {
                 document.getElementById('expo-info-title').innerText = expo.lugar;
                 document.getElementById('expo-info-dates').innerText = `📅 Desde ${new Date(expo.fecha_inicio).toLocaleDateString()} hasta ${new Date(expo.fecha_fin).toLocaleDateString()}`;
-                document.getElementById('expo-info-stats').innerHTML = `👥 Visitas totales registradas: <strong>${expo.visitas_totales || 0}</strong>`;
+                
+                let statsHtml = `👥 Visitas totales registradas: <strong>${expo.visitas_totales || 0}</strong>`;
+                if (expo.ganador_sorteo) {
+                    statsHtml += `<br>🎁 Ganador del Sorteo: <strong style="color: var(--accent);">${expo.ganador_sorteo}</strong>`;
+                }
+                document.getElementById('expo-info-stats').innerHTML = statsHtml;
+                
                 infoPanel.style.display = 'block';
                 if (aiPanel) aiPanel.style.display = 'block';
                 
@@ -688,8 +694,23 @@ if (btnRaffle) {
                 raffleWinner.innerHTML = `🏆 ${finalWinner} 🏆`;
                 raffleWinner.style.color = 'var(--accent)';
                 
-                // Trigger confetti if available or just alert
-                // We don't have a confetti library, so we just use emojis
+                // Save winner to Supabase (assuming the column was added)
+                const expoId = expoFilterInput ? expoFilterInput.value : '';
+                if (expoId) {
+                    supabaseClient
+                        .from('exposiciones')
+                        .update({ ganador_sorteo: finalWinner })
+                        .eq('id', expoId)
+                        .then(({ error }) => {
+                            if (error) {
+                                console.warn('No se pudo guardar el ganador (puede que falte la columna ganador_sorteo):', error);
+                            } else {
+                                console.log('Ganador guardado en la base de datos.');
+                                // Refresh data to update UI if needed
+                                fetchData();
+                            }
+                        });
+                }
             }
         }, 100);
     });
