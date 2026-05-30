@@ -628,37 +628,64 @@ function exportToPDF() {
         return;
     }
     
+    const expoId = expoFilterInput ? expoFilterInput.value : '';
+    let expoInfoHtml = '';
+    
+    if (expoId) {
+        const expo = allExpos.find(e => e.id === expoId);
+        if (expo) {
+            const startDate = new Date(expo.fecha_inicio).toLocaleDateString();
+            const endDate = new Date(expo.fecha_fin).toLocaleDateString();
+            expoInfoHtml = `
+            <div class="summary" style="text-align: left; background: #eef2ff; border-left: 4px solid #4d94ff;">
+                <h2 style="margin-top:0; color:#4d94ff;">${expo.lugar}</h2>
+                <strong>Fechas:</strong> ${startDate} al ${endDate} <br>
+                <strong>Visitas registradas:</strong> ${expo.visitas_totales || 0} <br>
+                <strong>Total encuestas en este reporte:</strong> ${filteredResponses.length}
+            </div>`;
+        }
+    } else {
+        expoInfoHtml = `
+        <div class="summary">
+            <strong>Exposición:</strong> Todas las exposiciones <br>
+            <strong>Total respuestas exportadas:</strong> ${filteredResponses.length}
+        </div>`;
+    }
+
+    let legendHtml = '<div class="legend" style="margin-bottom: 15px; font-size: 9px; color: #555; background: #fdfdfd; padding: 10px; border: 1px solid #eee; border-radius: 4px;"><strong>Leyenda de Preguntas:</strong><br>';
+    questions.forEach((q, i) => {
+        legendHtml += `<strong>Q${i+1}:</strong> ${q.text} &nbsp;&nbsp;&nbsp; `;
+    });
+    legendHtml += '</div>';
+
     let html = `
     <html>
     <head>
         <title>Reporte de Encuestas</title>
         <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.3; font-size: 11px; margin: 0; padding: 20px; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.3; font-size: 10px; margin: 0; padding: 20px; }
             @page { size: landscape; margin: 10mm; }
             h1 { color: #1a1a1a; border-bottom: 2px solid #ddd; padding-bottom: 5px; text-align: center; font-size: 16px; margin-bottom: 10px; }
-            .summary { background: #f5f5f5; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; font-size: 12px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; page-break-inside: auto; }
+            .summary { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; page-break-inside: auto; table-layout: auto; }
             tr { page-break-inside: avoid; page-break-after: auto; }
             thead { display: table-header-group; }
-            th, td { border: 1px solid #ddd; padding: 6px; text-align: left; vertical-align: top; }
-            th { background-color: #f0f0f0; color: #333; font-weight: bold; border-bottom: 2px solid #ccc; }
-            .q-header { font-size: 10px; max-width: 150px; }
-            .sugerencia { font-style: italic; color: #555; }
+            th, td { border: 1px solid #ddd; padding: 4px; text-align: left; vertical-align: top; word-wrap: break-word; }
+            th { background-color: #f0f0f0; color: #333; font-weight: bold; border-bottom: 2px solid #ccc; white-space: nowrap; }
+            .sugerencia { font-style: italic; color: #555; min-width: 150px; }
         </style>
     </head>
     <body>
         <h1>Resultados de Encuestas</h1>
-        <div class="summary">
-            <strong>Total respuestas exportadas:</strong> ${filteredResponses.length}
-        </div>
+        ${expoInfoHtml}
+        ${legendHtml}
         <table>
             <thead>
                 <tr>
                     <th>Fecha</th>
                     <th>Hora</th>
                     <th>Email</th>
-                    <th>Exposición</th>
-                    ${questions.map(q => `<th class="q-header">${q.text}</th>`).join('')}
+                    ${questions.map((q, i) => `<th>Q${i+1}</th>`).join('')}
                 </tr>
             </thead>
             <tbody>
@@ -668,15 +695,12 @@ function exportToPDF() {
         const dateObj = new Date(resp.created_at);
         const dateStr = dateObj.toLocaleDateString();
         const timeStr = dateObj.toLocaleTimeString();
-        const expo = allExpos.find(e => e.id === resp.exposicion_id);
-        const expoName = expo ? expo.lugar : '-';
         const email = resp.email || '-';
         
         html += `<tr>
             <td style="white-space: nowrap;">${dateStr}</td>
             <td style="white-space: nowrap;">${timeStr}</td>
-            <td>${email}</td>
-            <td>${expoName}</td>`;
+            <td>${email}</td>`;
         
         const respAnswers = allAnswers.filter(a => a.response_id === resp.id);
         
