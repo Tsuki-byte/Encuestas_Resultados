@@ -263,8 +263,9 @@
 
                 <div style="display: flex; gap: 15px;">
                     <div style="display: flex; flex-direction: column; flex: 1;">
-                        <label>Foto Portada (URL)</label>
-                        <input type="url" id="expo-foto" placeholder="https://..." style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff;">
+                        <label>Foto Portada (URL o Archivo)</label>
+                        <input type="url" id="expo-foto" placeholder="URL de la imagen..." style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff; margin-bottom: 5px;">
+                        <input type="file" id="expo-foto-file" accept="image/*" style="padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff; font-size: 0.9em;">
                     </div>
                     <div style="display: flex; flex-direction: column; flex: 1;">
                         <label>Galería Drive (URL)</label>
@@ -290,6 +291,6 @@
         </div>
     </div>
 
-    <script src="admin.js?v=14"></script>
+    <script src="admin.js?v=15"></script>
 </body>
 </html>

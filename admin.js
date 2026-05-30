@@ -458,6 +458,7 @@ window.editExpo = (id) => {
     document.getElementById('expo-desc').value = expo.descripcion || '';
     document.getElementById('expo-obs').value = expo.observaciones || '';
     document.getElementById('expo-foto').value = expo.foto_url || '';
+    document.getElementById('expo-foto-file').value = '';
     document.getElementById('expo-galeria').value = expo.galeria_url || '';
 
     expoModal.style.display = 'block';
@@ -577,6 +578,7 @@ if (btnNewExpo) {
         document.getElementById('expo-modal-title').innerText = 'Nueva Exposición';
         expoForm.reset();
         document.getElementById('expo-id').value = '';
+        document.getElementById('expo-foto-file').value = '';
         expoModal.style.display = 'block';
     });
 }
@@ -585,6 +587,38 @@ if (expoForm) {
     expoForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('expo-id').value;
+        const submitBtn = expoForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerText;
+        submitBtn.innerText = 'Guardando...';
+        submitBtn.disabled = true;
+
+        let fotoUrl = document.getElementById('expo-foto').value;
+        const fotoFile = document.getElementById('expo-foto-file').files[0];
+
+        if (fotoFile) {
+            submitBtn.innerText = 'Subiendo imagen...';
+            const fileExt = fotoFile.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const filePath = `portadas/${fileName}`;
+
+            const { error: uploadError } = await supabaseClient.storage
+                .from('exposiciones')
+                .upload(filePath, fotoFile);
+
+            if (uploadError) {
+                alert('Error al subir la imagen: ' + uploadError.message + '\\n(Asegúrate de haber creado el bucket \\'exposiciones\\' público en Supabase)');
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                return;
+            }
+
+            const { data: publicUrlData } = supabaseClient.storage
+                .from('exposiciones')
+                .getPublicUrl(filePath);
+                
+            fotoUrl = publicUrlData.publicUrl;
+        }
+
         const expoData = {
             lugar: document.getElementById('expo-lugar').value,
             fecha_inicio: document.getElementById('expo-inicio').value,
@@ -593,7 +627,7 @@ if (expoForm) {
             publico_mayoritario: document.getElementById('expo-publico').value,
             descripcion: document.getElementById('expo-desc').value,
             observaciones: document.getElementById('expo-obs').value,
-            foto_url: document.getElementById('expo-foto').value,
+            foto_url: fotoUrl,
             galeria_url: document.getElementById('expo-galeria').value
         };
 
@@ -605,6 +639,9 @@ if (expoForm) {
             const res = await supabaseClient.from('exposiciones').insert([expoData]);
             error = res.error;
         }
+
+        submitBtn.innerText = originalBtnText;
+        submitBtn.disabled = false;
 
         if (error) {
             alert('Error al guardar: ' + error.message);
