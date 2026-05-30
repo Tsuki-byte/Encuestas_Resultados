@@ -606,7 +606,7 @@ if (expoForm) {
                 .upload(filePath, fotoFile);
 
             if (uploadError) {
-                alert('Error al subir la imagen: ' + uploadError.message + '\\n(Asegúrate de haber creado el bucket \\'exposiciones\\' público en Supabase)');
+                alert('Error al subir la imagen: ' + uploadError.message + '\\n(Asegúrate de haber creado el bucket "exposiciones" público en Supabase)');
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
                 return;
