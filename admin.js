@@ -633,18 +633,17 @@ function exportToPDF() {
     <head>
         <title>Reporte de Encuestas</title>
         <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.5; padding: 30px; max-width: 800px; margin: 0 auto; }
-            h1 { color: #1a1a1a; border-bottom: 2px solid #ddd; padding-bottom: 10px; text-align: center; }
-            .summary { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 30px; text-align: center; }
-            .survey { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 25px; page-break-inside: avoid; }
-            .survey h2 { margin-top: 0; color: #4d94ff; font-size: 1.2rem; }
-            .meta { color: #555; font-size: 0.9em; margin-bottom: 15px; background: #fafafa; padding: 10px; border-radius: 4px; border-left: 3px solid #4d94ff; }
-            .q { font-weight: 600; margin-top: 15px; color: #222; }
-            .a { margin-left: 10px; margin-bottom: 5px; color: #444; }
-            .sugerencia { font-style: italic; background: #fffde7; padding: 10px; border-left: 3px solid #fbc02d; margin-top: 5px; }
-            @media print {
-                body { padding: 0; max-width: 100%; }
-            }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.3; font-size: 11px; margin: 0; padding: 20px; }
+            @page { size: landscape; margin: 10mm; }
+            h1 { color: #1a1a1a; border-bottom: 2px solid #ddd; padding-bottom: 5px; text-align: center; font-size: 16px; margin-bottom: 10px; }
+            .summary { background: #f5f5f5; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            th, td { border: 1px solid #ddd; padding: 6px; text-align: left; vertical-align: top; }
+            th { background-color: #f0f0f0; color: #333; font-weight: bold; border-bottom: 2px solid #ccc; }
+            .q-header { font-size: 10px; max-width: 150px; }
+            .sugerencia { font-style: italic; color: #555; }
         </style>
     </head>
     <body>
@@ -652,42 +651,52 @@ function exportToPDF() {
         <div class="summary">
             <strong>Total respuestas exportadas:</strong> ${filteredResponses.length}
         </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Email</th>
+                    <th>Exposición</th>
+                    ${questions.map(q => `<th class="q-header">${q.text}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
     `;
 
-    filteredResponses.forEach((resp, i) => {
+    filteredResponses.forEach((resp) => {
         const dateObj = new Date(resp.created_at);
         const dateStr = dateObj.toLocaleDateString();
         const timeStr = dateObj.toLocaleTimeString();
         const expo = allExpos.find(e => e.id === resp.exposicion_id);
-        const expoName = expo ? expo.lugar : 'Sin especificar';
-        const email = resp.email || 'Anónimo';
+        const expoName = expo ? expo.lugar : '-';
+        const email = resp.email || '-';
         
-        html += `<div class="survey">
-            <h2>Encuesta #${i + 1}</h2>
-            <div class="meta">
-                <strong>Fecha:</strong> ${dateStr} a las ${timeStr}<br>
-                <strong>Email:</strong> ${email}<br>
-                <strong>Exposición:</strong> ${expoName}
-            </div>`;
+        html += `<tr>
+            <td style="white-space: nowrap;">${dateStr}</td>
+            <td style="white-space: nowrap;">${timeStr}</td>
+            <td>${email}</td>
+            <td>${expoName}</td>`;
         
         const respAnswers = allAnswers.filter(a => a.response_id === resp.id);
         
         questions.forEach(q => {
             const answer = respAnswers.find(a => a.question_id === q.id);
-            const val = answer ? answer.value : 'Sin respuesta';
+            const val = answer ? answer.value : '-';
             
-            html += `<div class="q">${q.text}</div>`;
-            if (q.id === 'q10' && answer && answer.value && answer.value.trim() !== '') {
-                html += `<div class="a sugerencia">"${val}"</div>`;
+            if (q.id === 'q10') {
+                html += `<td class="sugerencia">${val}</td>`;
             } else {
-                html += `<div class="a">${val}</div>`;
+                html += `<td>${val}</td>`;
             }
         });
         
-        html += `</div>`;
+        html += `</tr>`;
     });
 
     html += `
+            </tbody>
+        </table>
         <script>
             window.onload = function() { 
                 setTimeout(function() {
