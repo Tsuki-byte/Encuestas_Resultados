@@ -342,11 +342,11 @@ function renderAveragesComparisonChart(dataPool) {
                 y: {
                     beginAtZero: true,
                     max: 5,
-                    ticks: { color: '#a0a0a0' },
+                    ticks: { color: '#a0a0a0', font: { size: 14 } },
                     grid: { color: '#333' }
                 },
                 x: {
-                    ticks: { color: '#a0a0a0' },
+                    ticks: { color: '#a0a0a0', font: { size: 14 } },
                     grid: { display: false }
                 }
             }
@@ -383,11 +383,11 @@ function renderDistributionChart(canvasId, qId, labels, color, type, dataPool) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: { color: '#a0a0a0', stepSize: 1 },
+                    ticks: { color: '#a0a0a0', stepSize: 1, font: { size: 14 } },
                     grid: { color: '#333' }
                 },
                 x: {
-                    ticks: { color: '#a0a0a0' },
+                    ticks: { color: '#a0a0a0', font: { size: 14 } },
                     grid: { display: false }
                 }
             }
