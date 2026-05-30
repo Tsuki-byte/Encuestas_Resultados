@@ -421,8 +421,10 @@ tr:hover {
 /* Print Styles */
 @media print {
     body {
-        background: white !important;
-        color: black !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        background-color: var(--bg-dark) !important;
+        color: var(--text-main) !important;
         overflow: visible !important;
     }
     
@@ -441,9 +443,10 @@ tr:hover {
 
     .content-header h1 {
         text-align: center;
-        border-bottom: 2px solid #ccc;
+        border-bottom: 2px solid var(--border);
         padding-bottom: 10px;
         margin-bottom: 20px;
+        color: var(--text-main) !important;
     }
     
     /* Make both stats and responses visible for print */
@@ -462,18 +465,18 @@ tr:hover {
     }
 
     .stat-card, .chart-container, .table-container, #ai-summary-panel, #expo-info-panel, .summary {
-        background: white !important;
-        border: 1px solid #ccc !important;
-        color: black !important;
+        background-color: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-main) !important;
         box-shadow: none !important;
     }
     
     .stat-label, .chart-container h3, #ai-summary-content {
-        color: #333 !important;
+        color: var(--text-muted) !important;
     }
     
     .stat-value {
-        color: #000 !important;
+        color: var(--accent) !important;
     }
     
     /* Adjust grid for print */
@@ -494,18 +497,19 @@ tr:hover {
         width: 100% !important;
         border-collapse: collapse !important;
         page-break-inside: auto;
+        color: var(--text-main) !important;
     }
     tr {
         page-break-inside: avoid;
         page-break-after: auto;
     }
     th, td {
-        border: 1px solid #ccc !important;
-        color: black !important;
-        padding: 5px !important;
-        font-size: 10px;
+        border: 1px solid var(--border) !important;
+        color: var(--text-main) !important;
+        padding: 8px !important;
+        font-size: 11px;
     }
     th {
-        background: #f0f0f0 !important;
+        background-color: rgba(255,255,255,0.05) !important;
     }
 }

@@ -676,7 +676,24 @@ if (exportPdfBtn) {
 }
 
 function exportToPDF() {
-    window.print();
+    // Save current active state
+    const statsSection = document.getElementById('stats');
+    const responsesSection = document.getElementById('responses');
+    const prevStatsActive = statsSection.classList.contains('active');
+    const prevRespActive = responsesSection.classList.contains('active');
+    
+    // Force both sections to be active so Chart.js canvases have physical dimensions
+    statsSection.classList.add('active');
+    responsesSection.classList.add('active');
+    
+    // Allow the browser to reflow and Chart.js to resize
+    setTimeout(() => {
+        window.print();
+        
+        // Restore original state
+        if (!prevStatsActive) statsSection.classList.remove('active');
+        if (!prevRespActive) responsesSection.classList.remove('active');
+    }, 500);
 }
 
 // AI Summary Logic
