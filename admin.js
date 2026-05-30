@@ -33,6 +33,7 @@ const audioguideRateEl = document.getElementById('audioguide-rate');
 const recurringRateEl = document.getElementById('recurring-rate');
 const responsesBody = document.getElementById('responses-body');
 const exportBtn = document.getElementById('export-csv');
+const exportPdfBtn = document.getElementById('export-pdf');
 const refreshBtn = document.getElementById('refresh-data');
 const modal = document.getElementById('details-modal');
 const modalContent = document.getElementById('modal-details-content');
@@ -616,6 +617,96 @@ if (expoForm) {
 
 refreshBtn.addEventListener('click', fetchData);
 exportBtn.addEventListener('click', exportToCSV);
+
+if (exportPdfBtn) {
+    exportPdfBtn.addEventListener('click', exportToPDF);
+}
+
+function exportToPDF() {
+    if (filteredResponses.length === 0) {
+        alert('No hay datos para exportar.');
+        return;
+    }
+    
+    let html = `
+    <html>
+    <head>
+        <title>Reporte de Encuestas</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.5; padding: 30px; max-width: 800px; margin: 0 auto; }
+            h1 { color: #1a1a1a; border-bottom: 2px solid #ddd; padding-bottom: 10px; text-align: center; }
+            .summary { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 30px; text-align: center; }
+            .survey { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 25px; page-break-inside: avoid; }
+            .survey h2 { margin-top: 0; color: #4d94ff; font-size: 1.2rem; }
+            .meta { color: #555; font-size: 0.9em; margin-bottom: 15px; background: #fafafa; padding: 10px; border-radius: 4px; border-left: 3px solid #4d94ff; }
+            .q { font-weight: 600; margin-top: 15px; color: #222; }
+            .a { margin-left: 10px; margin-bottom: 5px; color: #444; }
+            .sugerencia { font-style: italic; background: #fffde7; padding: 10px; border-left: 3px solid #fbc02d; margin-top: 5px; }
+            @media print {
+                body { padding: 0; max-width: 100%; }
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Resultados de Encuestas</h1>
+        <div class="summary">
+            <strong>Total respuestas exportadas:</strong> ${filteredResponses.length}
+        </div>
+    `;
+
+    filteredResponses.forEach((resp, i) => {
+        const dateObj = new Date(resp.created_at);
+        const dateStr = dateObj.toLocaleDateString();
+        const timeStr = dateObj.toLocaleTimeString();
+        const expo = allExpos.find(e => e.id === resp.exposicion_id);
+        const expoName = expo ? expo.lugar : 'Sin especificar';
+        const email = resp.email || 'Anónimo';
+        
+        html += `<div class="survey">
+            <h2>Encuesta #${i + 1}</h2>
+            <div class="meta">
+                <strong>Fecha:</strong> ${dateStr} a las ${timeStr}<br>
+                <strong>Email:</strong> ${email}<br>
+                <strong>Exposición:</strong> ${expoName}
+            </div>`;
+        
+        const respAnswers = allAnswers.filter(a => a.response_id === resp.id);
+        
+        questions.forEach(q => {
+            const answer = respAnswers.find(a => a.question_id === q.id);
+            const val = answer ? answer.value : 'Sin respuesta';
+            
+            html += `<div class="q">${q.text}</div>`;
+            if (q.id === 'q10' && answer && answer.value && answer.value.trim() !== '') {
+                html += `<div class="a sugerencia">"${val}"</div>`;
+            } else {
+                html += `<div class="a">${val}</div>`;
+            }
+        });
+        
+        html += `</div>`;
+    });
+
+    html += `
+        <script>
+            window.onload = function() { 
+                setTimeout(function() {
+                    window.print(); 
+                }, 500);
+            }
+        </script>
+    </body>
+    </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+        printWindow.document.write(html);
+        printWindow.document.close();
+    } else {
+        alert('Por favor, permite las ventanas emergentes (pop-ups) para generar el PDF.');
+    }
+}
 
 // AI Summary Logic
 const btnGenerateAi = document.getElementById('btn-generate-ai');
